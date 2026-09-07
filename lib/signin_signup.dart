@@ -71,7 +71,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                       Text(
                         _isSignUpMode ? "Create your account" : "Welcome back",
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.5,
@@ -262,7 +262,9 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           borderRadius: BorderRadius.circular(26),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFEC4899).withOpacity(0.35),
+                              color: const Color(
+                                0xFFEC4899,
+                              ).withValues(alpha: 0.35),
                               blurRadius: 12,
                               offset: const Offset(0, 5),
                             ),

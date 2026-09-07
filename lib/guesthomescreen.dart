@@ -177,7 +177,7 @@ class _MainGuestScreenState extends State<MainGuestScreen> {
                         ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: selectedCity,
+                          initialValue: selectedCity,
                           decoration: InputDecoration(
                             prefixIcon: const Icon(
                               Icons.location_on_outlined,
@@ -196,7 +196,9 @@ class _MainGuestScreenState extends State<MainGuestScreen> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide(
-                                color: const Color(0xFF8B5CF6).withOpacity(0.5),
+                                color: const Color(
+                                  0xFF8B5CF6,
+                                ).withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -225,7 +227,7 @@ class _MainGuestScreenState extends State<MainGuestScreen> {
                         ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: selectedCategory,
+                          initialValue: selectedCategory,
                           decoration: InputDecoration(
                             prefixIcon: const Icon(
                               Icons.category_outlined,
@@ -244,7 +246,9 @@ class _MainGuestScreenState extends State<MainGuestScreen> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide(
-                                color: const Color(0xFF8B5CF6).withOpacity(0.5),
+                                color: const Color(
+                                  0xFF8B5CF6,
+                                ).withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -607,7 +611,7 @@ class HomeScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
+                            color: Colors.black.withValues(alpha: 0.06),
                             blurRadius: 10,
                             offset: const Offset(0, 3),
                           ),
@@ -909,7 +913,7 @@ class HomeScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -940,7 +944,7 @@ class HomeScreen extends StatelessWidget {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -1125,7 +1129,7 @@ class HomeScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1287,8 +1291,8 @@ class GuestAuthLockState extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF8B5CF6).withOpacity(0.15),
-                    const Color(0xFFEC4899).withOpacity(0.15),
+                    const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                    const Color(0xFFEC4899).withValues(alpha: 0.15),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -1330,7 +1334,7 @@ class GuestAuthLockState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(26),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

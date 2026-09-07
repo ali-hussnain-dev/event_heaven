@@ -146,7 +146,7 @@ class _BrowseServicesScreenState extends State<BrowseServicesScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.12),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -185,7 +185,7 @@ class _BrowseServicesScreenState extends State<BrowseServicesScreen> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -286,7 +286,7 @@ class _BrowseServicesScreenState extends State<BrowseServicesScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -412,7 +412,7 @@ class _BrowseServicesScreenState extends State<BrowseServicesScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -732,7 +732,7 @@ class _BrowseServicesScreenState extends State<BrowseServicesScreen> {
                         ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: tempCity,
+                          initialValue: tempCity,
                           decoration: InputDecoration(
                             prefixIcon: const Icon(
                               Icons.location_on_outlined,
@@ -751,7 +751,9 @@ class _BrowseServicesScreenState extends State<BrowseServicesScreen> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide(
-                                color: const Color(0xFF8B5CF6).withOpacity(0.5),
+                                color: const Color(
+                                  0xFF8B5CF6,
+                                ).withValues(alpha: 0.5),
                               ),
                             ),
                           ),

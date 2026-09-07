@@ -166,7 +166,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               width: 140,
                               height: 140,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -196,7 +196,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               slide['description'],
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 13.5,
                                 height: 1.4,
                               ),
@@ -220,7 +220,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 return Container(
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.22),
+                                    color: Colors.white.withValues(alpha: 0.22),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Text(
