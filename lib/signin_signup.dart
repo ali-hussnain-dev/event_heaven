@@ -61,7 +61,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         errorBuilder: (context, error, stackTrace) {
                           return const Icon(
                             Icons.event_available_rounded,
-                            color: Colors.white,
+                            color: Colors.black,
                             size: 85,
                           );
                         },
