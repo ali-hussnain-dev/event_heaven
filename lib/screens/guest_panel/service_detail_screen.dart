@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+// Absolute Package Import
+import 'package:event_heaven/screens/auth_onboarding/signup_signin.dart';
+
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? serviceData;
 
@@ -13,6 +16,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   late Map<String, dynamic> service;
   late List<String> specialties;
   late List<String> equipmentList;
+
+  final LinearGradient _primaryGradient = const LinearGradient(
+    colors: [Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFFF97316)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   @override
   void initState() {
@@ -255,89 +264,137 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
-  // Auth Lock State Dialog Popup
-  void _showAuthRequiredDialog(String actionText) {
+  void _showAuthRequiredDialog({
+    required String actionText,
+    required String intentType,
+  }) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
                 ),
-                child: const Icon(
-                  Icons.lock_outline_rounded,
-                  color: Color(0xFF8B5CF6),
-                  size: 38,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                "Login Required",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Please log in or sign up to $actionText and proceed with your request.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                width: double.infinity,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F3FF),
+                    shape: BoxShape.circle,
                   ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: const Text(
-                    "LOGIN / SIGN UP",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      letterSpacing: 0.5,
-                    ),
+                  child: Icon(
+                    intentType == 'favorite'
+                        ? Icons.favorite_rounded
+                        : intentType == 'review'
+                        ? Icons.rate_review_rounded
+                        : Icons.lock_rounded,
+                    color: const Color(0xFF8B5CF6),
+                    size: 38,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                const Text(
+                  "Login Required",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Please log in or sign up to $actionText and proceed with your request.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+                    ),
+                    borderRadius: BorderRadius.circular(23),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const LoginSignupScreen(userRole: 'customer'),
+                          settings: RouteSettings(
+                            arguments: {
+                              'targetTabIndex': intentType == 'favorite'
+                                  ? 1
+                                  : 0,
+                              'pendingFavoriteItem': intentType == 'favorite'
+                                  ? service
+                                  : null,
+                              'favoriteType': intentType == 'favorite'
+                                  ? 'service'
+                                  : null,
+                              'openBookingForm': intentType == 'booking',
+                              'targetBookingVenue': intentType == 'booking'
+                                  ? service
+                                  : null,
+                              'targetBookingService': intentType == 'booking'
+                                  ? service
+                                  : null,
+                              'bookingType': intentType == 'booking'
+                                  ? 'service'
+                                  : null,
+                              'openReviewForm': intentType == 'review',
+                              'targetReviewVenue': intentType == 'review'
+                                  ? service
+                                  : null,
+                              'targetReviewService': intentType == 'review'
+                                  ? service
+                                  : null,
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(23),
+                      ),
+                    ),
+                    child: const Text(
+                      "LOGIN / SIGN UP",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -353,7 +410,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           SingleChildScrollView(
             child: Column(
               children: [
-                // Top Banner Image & Floating Buttons
+                // Top Banner Image & Floating Header Buttons
                 Stack(
                   children: [
                     Image.network(
@@ -380,9 +437,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.black.withValues(alpha: 0.35),
+                            Colors.black.withOpacity(0.35),
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.1),
+                            Colors.black.withOpacity(0.1),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -432,10 +489,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                 ),
                                 const SizedBox(width: 10),
 
-                                // Favorite Heart Button -> Triggers Auth Lock Dialog
+                                // Favorite Heart Button
                                 GestureDetector(
                                   onTap: () => _showAuthRequiredDialog(
-                                    "save this service to favorites",
+                                    actionText:
+                                        "save this service to favorites",
+                                    intentType: 'favorite',
                                   ),
                                   child: Container(
                                     padding: const EdgeInsets.all(10),
@@ -471,7 +530,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
+                            color: Colors.black.withOpacity(0.06),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -594,7 +653,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                         decoration: BoxDecoration(
                                           color: const Color(
                                             0xFF8B5CF6,
-                                          ).withValues(alpha: 0.15),
+                                          ).withOpacity(0.15),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -650,7 +709,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                         decoration: BoxDecoration(
                                           color: const Color(
                                             0xFFF97316,
-                                          ).withValues(alpha: 0.15),
+                                          ).withOpacity(0.15),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -700,61 +759,24 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           const Divider(),
                           const SizedBox(height: 12),
 
-                          // Card Book Now Button -> Triggers Auth Dialog
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          // Clean Price Row
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Starting from",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  Text(
-                                    "${service['price']}",
-                                    style: const TextStyle(
-                                      color: Color(0xFF8B5CF6),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
+                              const Text(
+                                "Starting from",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
-                              Container(
-                                height: 42,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 22,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFEC4899),
-                                      Color(0xFFF97316),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(21),
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () => _showAuthRequiredDialog(
-                                    "book this service",
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: const Text(
-                                    "Book Now",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "${service['price']}",
+                                style: const TextStyle(
+                                  color: Color(0xFF8B5CF6),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
@@ -778,7 +800,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withOpacity(0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -823,7 +845,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withOpacity(0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -901,7 +923,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
+                          color: Colors.black.withOpacity(0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -941,19 +963,21 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  Text(
-                                    equipmentList[index],
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade800,
-                                      fontWeight: FontWeight.w500,
-                                    ), // TextStyle
-                                  ), // Text
-                                ], // 1. Array yahan ']' aur ',' (comma) se close hogi, ';' se nahi
-                              ), // 2. Row widget close
-                            ); // 3. Padding / return statement yahan ';' se close hoga
-                          }, // 4. itemBuilder function close
-                        ), // ListView.builder
+                                  Expanded(
+                                    child: Text(
+                                      equipmentList[index],
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey.shade800,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -961,7 +985,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
                 const SizedBox(height: 16),
 
-                // Reviews Card
+                // Reviews Card with "+ Write Review" Action
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
@@ -972,7 +996,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
+                          color: Colors.black.withOpacity(0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -981,15 +1005,34 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Reviews (${service['reviewsCount']})",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Reviews (${service['reviewsCount']})",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => _showAuthRequiredDialog(
+                                actionText: "write a review for this service",
+                                intentType: 'review',
+                              ),
+                              child: const Text(
+                                "+ Write Review",
+                                style: TextStyle(
+                                  color: Color(0xFF8B5CF6),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1058,18 +1101,18 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             ),
           ),
 
-          // Sticky Bottom Price & Book Now Bar -> Triggers Auth Lock Dialog
+          // Single Full-Width "Book Now" Gradient Action Bar at Bottom
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: Colors.black.withOpacity(0.08),
                     blurRadius: 15,
                     offset: const Offset(0, -4),
                   ),
@@ -1077,66 +1120,40 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               ),
               child: SafeArea(
                 top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Total Price",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        Text(
-                          "${service['price']}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      height: 48,
-                      width: 170,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFEC4899), Color(0xFFF97316)],
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFFEC4899,
-                            ).withValues(alpha: 0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: _primaryGradient,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                      child: ElevatedButton(
-                        onPressed: () =>
-                            _showAuthRequiredDialog("book this service"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                        ),
-                        child: const Text(
-                          "Book Now",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => _showAuthRequiredDialog(
+                      actionText: "book this service",
+                      intentType: 'booking',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                  ],
+                    child: const Text(
+                      "Book Now",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

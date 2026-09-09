@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'welcome.dart'; // Direct Package Importr
+import 'welcome_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,7 +18,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  // Navigation function for Skip & Get Started buttons
   void _navigateToWelcome() {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
@@ -91,53 +90,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 10),
-
-              // 1. Header Bar (Logo & Skip Button)
+              // 1. Clean Header (Right-Aligned Skip Button)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 45), // Left balancing space
-                    // Center Logo Block
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          "assets/images/logo.png",
-                          width: 80,
-                          height: 80,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: _navigateToWelcome,
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "Skip",
+                        style: TextStyle(
                           color: Colors.white,
-                          colorBlendMode: BlendMode.srcIn,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.storefront_rounded,
-                                color: Colors.white,
-                                size: 40,
-                              ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-
-                    // Skip Action
-                    GestureDetector(
-                      onTap: _navigateToWelcome,
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Skip",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
 
@@ -153,30 +128,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   },
                   itemBuilder: (context, index) {
                     final slide = _onboardingData[index];
+                    final List<String> items = List<String>.from(
+                      slide['gridItems'],
+                    );
+
                     return SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: Column(
                           children: [
-                            const SizedBox(height: 30),
+                            const SizedBox(height: 15),
 
-                            // Main Category Icon Circle
+                            // Category Icon Circle (Resized to 110px for zero screen overflow)
                             Container(
-                              width: 140,
-                              height: 140,
+                              width: 110,
+                              height: 110,
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: Colors.white.withOpacity(0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 slide['icon'],
-                                size: 70,
+                                size: 56,
                                 color: Colors.white,
                               ),
                             ),
 
-                            const SizedBox(height: 30),
+                            const SizedBox(height: 24),
 
                             // Title
                             Text(
@@ -184,56 +163,53 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
 
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
 
                             // Description
                             Text(
                               slide['description'],
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: Colors.white.withOpacity(0.9),
                                 fontSize: 13.5,
                                 height: 1.4,
                               ),
                             ),
 
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 28),
 
-                            // 2x2 Feature Pills
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: 4,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisExtent: 52,
-                                    crossAxisSpacing: 14,
-                                    mainAxisSpacing: 14,
-                                  ),
-                              itemBuilder: (context, gridIndex) {
-                                return Container(
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.22),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    slide['gridItems'][gridIndex],
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
+                            // Optimized 2x2 Feature Pills (Lightweight Flex Rows)
+                            Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildFeaturePill(items[0]),
                                     ),
-                                  ),
-                                );
-                              },
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildFeaturePill(items[1]),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildFeaturePill(items[2]),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildFeaturePill(items[3]),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -247,7 +223,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
-                  vertical: 20,
+                  vertical: 16,
                 ),
                 child: Column(
                   children: [
@@ -271,7 +247,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Dynamic Button (NEXT / GET STARTED)
+                    // Dynamic Action Button (NEXT / GET STARTED)
                     ElevatedButton(
                       onPressed: () {
                         if (_currentSlide == _onboardingData.length - 1) {
@@ -315,6 +291,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Helper widget for feature pills (reduces layout delegate overhead)
+  Widget _buildFeaturePill(String title) {
+    return Container(
+      height: 48,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.22),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        title,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

@@ -1,16 +1,33 @@
 import 'package:flutter/material.dart';
+import 'venue_booking_form_screen.dart';
 
-class VenueDetailScreen extends StatefulWidget {
+class UserVenueDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? venueData;
+  final bool initialIsFavorite;
+  final Function(Map<String, dynamic>)? onToggleFavorite;
+  final bool autoOpenReviewForm;
 
-  const VenueDetailScreen({super.key, this.venueData});
+  const UserVenueDetailScreen({
+    super.key,
+    this.venueData,
+    this.initialIsFavorite = false,
+    this.onToggleFavorite,
+    this.autoOpenReviewForm = false,
+  });
 
   @override
-  State<VenueDetailScreen> createState() => _VenueDetailScreenState();
+  State<UserVenueDetailScreen> createState() => _UserVenueDetailScreenState();
 }
 
-class _VenueDetailScreenState extends State<VenueDetailScreen> {
+class _UserVenueDetailScreenState extends State<UserVenueDetailScreen> {
   late final Map<String, dynamic> venue;
+  late bool _isFavorite;
+
+  final LinearGradient _primaryGradient = const LinearGradient(
+    colors: [Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFFF97316)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   @override
   void initState() {
@@ -29,6 +46,8 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
               'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80',
           'about':
               'Experience luxury and elegance at Royal Crown Marriage Hall. Our state-of-the-art facilities, spacious stage setups, and grand architecture make your special day truly memorable. Fully equipped for royal weddings and corporate events.',
+          'hasSegregation': true,
+          'ownerId': 'owner_12345',
         };
 
     if (venue['about'] == null) {
@@ -41,22 +60,55 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
     if (venue['reviewsCount'] == null && venue['reviews'] != null) {
       venue['reviewsCount'] = '${venue['reviews']}';
     } else if (venue['reviewsCount'] == null) {
-      venue['reviewsCount'] = '124';
+      venue['reviewsCount'] = '142';
     }
     if (venue['price'] == null && venue['priceText'] != null) {
       venue['price'] = venue['priceText'];
     }
+
+    _isFavorite = widget.initialIsFavorite || (venue['isFavorite'] == true);
+
+    // Auto-trigger Write Review dialog if user was redirected post-login
+    if (widget.autoOpenReviewForm) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showWriteReviewDialog();
+      });
+    }
   }
 
-  final List<String> amenities = const [
-    'Air Conditioning',
-    'Parking Space',
-    'Stage & Decorations',
-    'Audio System',
-    'Catering Kitchen',
-    'Bridal Room',
-    'Backup Generator',
-    'Security',
+  // Dynamic Amenities List
+  List<String> get _venueAmenities {
+    if (venue['amenities'] != null && venue['amenities'] is List) {
+      return List<String>.from(venue['amenities']);
+    }
+    return const [
+      'Air Conditioning',
+      'Parking Space',
+      'Stage & Decorations',
+      'Audio System',
+      'Catering Kitchen',
+      'Bridal Room',
+      'Backup Generator',
+      'Segregation Setup (Parda)',
+    ];
+  }
+
+  // Sample Reviews List
+  final List<Map<String, dynamic>> _sampleReviews = [
+    {
+      'name': 'Sarah Ali',
+      'date': '2 weeks ago',
+      'rating': 5,
+      'comment':
+          'Amazing venue! Perfect for our family wedding. The staff was very cooperative and the stage decoration exceeded our expectations.',
+    },
+    {
+      'name': 'Usman Tariq',
+      'date': '1 month ago',
+      'rating': 4.5,
+      'comment':
+          'Spacious hall with excellent air conditioning and generator backup. Valet parking was managed really smoothly.',
+    },
   ];
 
   void _shareVenue() {
@@ -69,92 +121,210 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
     );
   }
 
-  // Auth Required Popup Function
-  void _showAuthRequiredDialog(String actionText) {
+  // Favorite Toggle for Logged-In User
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+      venue['isFavorite'] = _isFavorite;
+    });
+
+    if (widget.onToggleFavorite != null) {
+      widget.onToggleFavorite!(venue);
+    }
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isFavorite
+              ? "${venue['title']} saved to your favorites!"
+              : "${venue['title']} removed from your favorites!",
+        ),
+        duration: const Duration(seconds: 2),
+        backgroundColor: const Color(0xFF8B5CF6),
+      ),
+    );
+  }
+
+  // Write Review Dialog using StatefulBuilder
+  void _showWriteReviewDialog() {
+    double userRating = 5.0;
+    final TextEditingController reviewController = TextEditingController();
+
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.lock_outline_rounded,
-                  color: Color(0xFF8B5CF6),
-                  size: 38,
-                ),
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
               ),
-              const SizedBox(height: 16),
-              const Text(
-                "Login Required",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Please log in or sign up to $actionText and proceed with your request.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                width: double.infinity,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
+                    child: const Icon(
+                      Icons.rate_review_rounded,
+                      color: Color(0xFF8B5CF6),
+                      size: 20,
                     ),
                   ),
-                  child: const Text(
-                    "LOGIN / SIGN UP",
+                  const SizedBox(width: 10),
+                  const Text(
+                    "Write a Review",
                     style: TextStyle(
-                      color: Colors.white,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      letterSpacing: 0.5,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Rate your experience:",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setDialogState(() {
+                            userRating = index + 1.0;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(
+                            Icons.star_rounded,
+                            color: index < userRating
+                                ? Colors.amber
+                                : Colors.grey.shade300,
+                            size: 32,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: reviewController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText:
+                          "Share feedback about stage, catering, staff...",
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF8B5CF6),
+                          width: 1.5,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: _primaryGradient,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (reviewController.text.trim().isNotEmpty) {
+                        setState(() {
+                          _sampleReviews.insert(0, {
+                            'name': 'Risal Ahmad',
+                            'date': 'Just now',
+                            'rating': userRating,
+                            'comment': reviewController.text.trim(),
+                          });
+                          int currentReviews =
+                              int.tryParse(venue['reviewsCount'].toString()) ??
+                              142;
+                          venue['reviewsCount'] = '${currentReviews + 1}';
+                        });
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Thank you for your review!"),
+                            backgroundColor: Color(0xFF8B5CF6),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                    ),
+                    child: const Text(
+                      "Submit",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
+    );
+  }
+
+  // Navigate directly to Booking Form Screen
+  void _proceedToBooking() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserBookingFormScreen(venueData: venue),
+      ),
     );
   }
 
@@ -167,6 +337,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
           SingleChildScrollView(
             child: Column(
               children: [
+                // Top Banner Image & Actions
                 Stack(
                   children: [
                     Image.network(
@@ -181,9 +352,9 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.black.withValues(alpha: 0.4),
+                            Colors.black.withOpacity(0.4),
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.1),
+                            Colors.black.withOpacity(0.1),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -232,22 +403,22 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-
-                                // Favorite Heart Button -> Triggers Auth Popup
                                 GestureDetector(
-                                  onTap: () => _showAuthRequiredDialog(
-                                    "save this venue to favorites",
-                                  ),
+                                  onTap: _toggleFavorite,
                                   child: Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: const BoxDecoration(
                                       color: Colors.white,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(
-                                      Icons.favorite_border_rounded,
+                                    child: Icon(
+                                      _isFavorite
+                                          ? Icons.favorite
+                                          : Icons.favorite_border_rounded,
                                       size: 18,
-                                      color: Colors.black87,
+                                      color: _isFavorite
+                                          ? const Color(0xFFEC4899)
+                                          : Colors.black87,
                                     ),
                                   ),
                                 ),
@@ -272,7 +443,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
+                            color: Colors.black.withOpacity(0.06),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -333,11 +504,13 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                                 color: Colors.grey,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                venue['location'] ?? 'Gujranwala, Pakistan',
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 13,
+                              Expanded(
+                                child: Text(
+                                  venue['location'] ?? 'Gujranwala, Pakistan',
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],
@@ -383,7 +556,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                                   color: Color(0xFF334155),
                                 ),
                               ),
-                              const SizedBox(width: 20),
+                              const SizedBox(width: 18),
                               const Icon(
                                 Icons.calendar_today_outlined,
                                 size: 16,
@@ -399,65 +572,63 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          const SizedBox(height: 12),
-
-                          // Book Now Button 1 -> Triggers Auth Popup
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          if (venue['hasSegregation'] == true) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F3FF),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF8B5CF6,
+                                  ).withOpacity(0.3),
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Text(
-                                    "Starting from",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
+                                  Icon(
+                                    Icons.shield_outlined,
+                                    size: 14,
+                                    color: Color(0xFF8B5CF6),
                                   ),
+                                  SizedBox(width: 6),
                                   Text(
-                                    "${venue['price']} /day",
-                                    style: const TextStyle(
-                                      color: Color(0xFF8B5CF6),
+                                    "Segregation Setup (Parda) Available",
+                                    style: TextStyle(
+                                      fontSize: 11.5,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                      color: Color(0xFF8B5CF6),
                                     ),
                                   ),
                                 ],
                               ),
-                              Container(
-                                height: 42,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 22,
+                            ),
+                          ],
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          const SizedBox(height: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Starting from",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
                                 ),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF8B5CF6),
-                                      Color(0xFFEC4899),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(21),
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () => _showAuthRequiredDialog(
-                                    "book this venue",
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: const Text(
-                                    "Book Now",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "${venue['price']} /day",
+                                style: const TextStyle(
+                                  color: Color(0xFF8B5CF6),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
@@ -468,7 +639,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                   ),
                 ),
 
-                // About Section
+                // About Description Section
                 Transform.translate(
                   offset: const Offset(0, -16),
                   child: Padding(
@@ -481,7 +652,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withOpacity(0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -526,7 +697,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withOpacity(0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -547,7 +718,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                           GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: amenities.length,
+                            itemCount: _venueAmenities.length,
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
@@ -573,7 +744,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      amenities[index],
+                                      _venueAmenities[index],
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         color: Colors.grey.shade800,
@@ -592,7 +763,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // Reviews Section
+                // Reviews Section with "+ Write Review" Action
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
@@ -603,7 +774,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
+                          color: Colors.black.withOpacity(0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -612,72 +783,107 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Reviews (${venue['reviewsCount']})",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Color(0xFFF1F5F9),
-                              child: Text("👩", style: TextStyle(fontSize: 20)),
+                            Text(
+                              "Reviews (${venue['reviewsCount']})",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                            TextButton(
+                              onPressed: _showWriteReviewDialog,
+                              child: const Text(
+                                "+ Write Review",
+                                style: TextStyle(
+                                  color: Color(0xFF8B5CF6),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _sampleReviews.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 24),
+                          itemBuilder: (context, index) {
+                            final rev = _sampleReviews[index];
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: Colors.grey.shade200,
+                                  child: Text(
+                                    rev['name'][0],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF8B5CF6),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        "Sarah Ali",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            rev['name'],
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13.5,
+                                            ),
+                                          ),
+                                          Text(
+                                            rev['date'],
+                                            style: TextStyle(
+                                              color: Colors.grey.shade500,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: List.generate(
+                                          5,
+                                          (i) => Icon(
+                                            Icons.star_rounded,
+                                            color: i < (rev['rating'] as num)
+                                                ? Colors.amber
+                                                : Colors.grey.shade300,
+                                            size: 15,
+                                          ),
                                         ),
                                       ),
+                                      const SizedBox(height: 6),
                                       Text(
-                                        "2 weeks ago",
+                                        rev['comment'],
                                         style: TextStyle(
-                                          color: Colors.grey.shade500,
-                                          fontSize: 11,
+                                          fontSize: 12.5,
+                                          color: Colors.grey.shade700,
+                                          height: 1.4,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: List.generate(
-                                      5,
-                                      (i) => const Icon(
-                                        Icons.star_rounded,
-                                        color: Colors.amber,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    "Amazing venue! Perfect for our wedding. The staff was very cooperative and the stage decoration exceeded our expectations.",
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      color: Colors.grey.shade700,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -688,18 +894,18 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
             ),
           ),
 
-          // Sticky Bottom Price & Book Now Bar -> Triggers Auth Popup
+          // Single Sticky Bottom Bar: Full-Width [Book Now]
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: Colors.black.withOpacity(0.08),
                     blurRadius: 15,
                     offset: const Offset(0, -4),
                   ),
@@ -707,66 +913,38 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
               ),
               child: SafeArea(
                 top: false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Total Price",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        Text(
-                          "${venue['price']}/day",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      height: 48,
-                      width: 170,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-                        ),
+                child: Container(
+                  height: 48,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: _primaryGradient,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: _proceedToBooking,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFF8B5CF6,
-                            ).withValues(alpha: 0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () =>
-                            _showAuthRequiredDialog("book this venue"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                        ),
-                        child: const Text(
-                          "Book Now",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
                     ),
-                  ],
+                    child: const Text(
+                      "Book Now",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

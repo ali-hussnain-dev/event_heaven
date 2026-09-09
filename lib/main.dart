@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:event_heaven/splash_screen.dart';
+import 'package:event_heaven/screens/auth_onboarding/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
